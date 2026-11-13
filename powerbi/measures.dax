@@ -1,0 +1,106 @@
+// ============================================================================
+// Healthcare Revenue Cycle Intelligence - DAX Measure Library
+// Compatible with Star Schema in powerbi/data_model.md
+// ============================================================================
+
+// --- Volume & Financial Core Measures ---
+Total Patient Visits =
+SUM(fact_patient_visits[visit_count])
+
+Total Claims =
+COUNTROWS(fact_claims)
+
+Accepted Claims =
+CALCULATE(
+    [Total Claims],
+    fact_claims[claim_status] = "Accepted"
+)
+
+Denied Claims =
+CALCULATE(
+    [Total Claims],
+    fact_claims[claim_status] = "Denied"
+)
+
+Pending Claims =
+CALCULATE(
+    [Total Claims],
+    fact_claims[claim_status] = "Pending"
+)
+
+Total Billed Amount =
+SUM(fact_claims[billed_amount])
+
+Total Payments =
+SUM(fact_claims[paid_amount])
+
+Billing Gap =
+[Total Billed Amount] - [Total Payments]
+
+Total Operating Cost =
+SUM(fact_patient_visits[operating_cost])
+
+Net Operating Surplus =
+[Total Payments] - [Total Operating Cost]
+
+// --- Rate & Margin KPIs ---
+Collection Rate % =
+DIVIDE([Total Payments], [Total Billed Amount], 0)
+
+Claims Denial Rate % =
+DIVIDE([Denied Claims], [Total Claims], 0)
+
+Claims Acceptance Rate % =
+DIVIDE([Accepted Claims], [Total Claims], 0)
+
+Operating Margin % =
+DIVIDE([Net Operating Surplus], [Total Payments], 0)
+
+// --- Appeals & Denial Recovery ---
+Total Appealed Denials =
+SUM(fact_denials_appeals[appealed_flag])
+
+Total Overturned Denials =
+SUM(fact_denials_appeals[overturned_flag])
+
+Appeal Overturn Rate % =
+DIVIDE([Total Overturned Denials], [Total Appealed Denials], 0)
+
+Recovered Denial Amount =
+SUM(fact_denials_appeals[recovered_amount])
+
+// --- Month-over-Month (MoM) Comparison Measures ---
+Visits Prev Month =
+CALCULATE(
+    [Total Patient Visits],
+    DATEADD(dim_date[full_date], -1, MONTH)
+)
+
+Visits MoM % =
+DIVIDE([Total Patient Visits] - [Visits Prev Month], [Visits Prev Month], 0)
+
+Collection Rate Prev Month =
+CALCULATE(
+    [Collection Rate %],
+    DATEADD(dim_date[full_date], -1, MONTH)
+)
+
+Collection Rate MoM pp =
+([Collection Rate %] - [Collection Rate Prev Month]) * 100
+
+Denial Rate Prev Month =
+CALCULATE(
+    [Claims Denial Rate %],
+    DATEADD(dim_date[full_date], -1, MONTH)
+)
+
+Denial Rate MoM pp =
+([Claims Denial Rate %] - [Denial Rate Prev Month]) * 100
+
+// --- Payer Share & Benchmarking ---
+Claims Share % =
+DIVIDE(
+    [Total Claims],
+    CALCULATE([Total Claims], ALL(dim_payer)),
+    0
+)

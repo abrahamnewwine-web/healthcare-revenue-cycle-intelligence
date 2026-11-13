@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Environment & local secrets
+.env
+.env.local
+
+# Local build & generated runtime caches
+data/raw/*.csv
+data/processed/*.db
+data/processed/fact_*.csv
+*.log
+.DS_Store
+Thumbs.db

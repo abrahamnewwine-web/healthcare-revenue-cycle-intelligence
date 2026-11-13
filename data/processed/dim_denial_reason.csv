@@ -1,0 +1,7 @@
+reason_id,reason_name,reason_category
+1,Prior authorization,Pre-Service
+2,Coding / documentation,Mid-Cycle
+3,Eligibility / coverage,Front-End
+4,Duplicate claim,Billing Hygiene
+5,Timely filing,Compliance
+6,Other payer policy,Adjudication

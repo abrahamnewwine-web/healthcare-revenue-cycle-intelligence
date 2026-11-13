@@ -1,0 +1,6 @@
+payer_id,payer_name,payer_type
+1,Blue Cross Blue Shield,Commercial
+2,UnitedHealthcare,Commercial
+3,Medicare,Government
+4,Aetna,Commercial
+5,Medicaid,Government
