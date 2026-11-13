@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Healthcare Intelligence | Revenue Cycle &amp; Operations</title>
+  <link rel="stylesheet" href="/static/css/dashboard.css">
+  <script src="/static/vendor/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="dashboard-shell">
+    <header class="top-header">
+      <div class="brand-block">
+        <div class="brand-badge">RCM BI</div>
+        <div>
+          <h1>HEALTHCARE INTELLIGENCE</h1>
+          <p class="subtitle">EXECUTIVE PERFORMANCE &nbsp;|&nbsp; REVENUE CYCLE &amp; OPERATIONS</p>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label for="filterYear">YEAR</label>
+          <select id="filterYear">
+            <option value="">All</option>
+            {% for y in options.years %}
+            <option value="{{ y }}" selected>{{ y }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filterMonth">MONTH</label>
+          <select id="filterMonth">
+            <option value="">All</option>
+            {% for m in options.months %}
+            <option value="{{ m.month_num }}">{{ m.month_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filterPayer">INSURANCE PAYER</label>
+          <select id="filterPayer">
+            <option value="All">All</option>
+            {% for p in options.payers %}
+            <option value="{{ p }}">{{ p }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filterDept">DEPT</label>
+          <select id="filterDept">
+            <option value="All">All</option>
+            {% for d in options.departments %}
+            <option value="{{ d }}" {% if d == "Oncology" %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="action-buttons">
+          <button id="btnReset" class="btn-secondary" title="Reset to All Departments">All Depts</button>
+          <button id="btnExport" class="btn-primary" title="Download Monthly Summary CSV">Export CSV</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="context-banner">
+      <span id="scopeBadge" class="scope-pill">Scope: 2025 · Oncology</span>
+      <span class="scope-note">Simulated portfolio benchmark dataset · Reconciled SQLite + DAX-aligned calculations · Q1 2026 statistical forecast (95% CI)</span>
+    </div>
+
+    <section class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">TOTAL PATIENT VISITS</div>
+        <div class="kpi-value" id="kpiVisits">--</div>
+        <div class="kpi-spark"><canvas id="sparkVisits"></canvas></div>
+        <div class="kpi-delta" id="deltaVisits">--</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">COLLECTION RATE %</div>
+        <div class="kpi-value" id="kpiCollection">--</div>
+        <div class="kpi-spark"><canvas id="sparkCollection"></canvas></div>
+        <div class="kpi-delta" id="deltaCollection">--</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">DENIAL RATE %</div>
+        <div class="kpi-value" id="kpiDenial">--</div>
+        <div class="kpi-spark"><canvas id="sparkDenial"></canvas></div>
+        <div class="kpi-delta" id="deltaDenial">--</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">OPERATING MARGIN %</div>
+        <div class="kpi-value" id="kpiMargin">--</div>
+        <div class="kpi-spark"><canvas id="sparkMargin"></canvas></div>
+        <div class="kpi-delta" id="deltaMargin">--</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">NET OPERATING SURPLUS</div>
+        <div class="kpi-value" id="kpiSurplus">--</div>
+        <div class="kpi-spark"><canvas id="sparkSurplus"></canvas></div>
+        <div class="kpi-delta" id="deltaSurplus">--</div>
+      </div>
+      <div class="kpi-card gauge-card">
+        <div class="kpi-label">Claims Acceptance Rate %</div>
+        <div class="gauge-wrap">
+          <canvas id="acceptanceGauge"></canvas>
+          <div class="gauge-center" id="kpiAcceptance">--</div>
+        </div>
+        <div class="gauge-bounds"><span>0.0%</span><span id="claimsCountLabel">-- claims</span><span>100.0%</span></div>
+      </div>
+    </section>
+
+    <section class="grid-3">
+      <div class="panel">
+        <div class="panel-title">Monthly Billed Amount and Total Payments by Year-Month</div>
+        <div class="chart-box"><canvas id="chartBilledPaid"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Claims Denials by Insurance Payer</div>
+        <div class="chart-box"><canvas id="chartPayerDenials"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Top Claims Denial Reasons</div>
+        <div class="chart-box"><canvas id="chartDenialReasons"></canvas></div>
+      </div>
+    </section>
+
+    <section class="grid-3">
+      <div class="panel">
+        <div class="panel-title">Monthly Collection Rate vs. Claims Denial Ratio</div>
+        <div class="chart-box"><canvas id="chartRateRatio"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Monthly Denial Appeals vs. Overturned Claims</div>
+        <div class="chart-box"><canvas id="chartAppeals"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Revenue Collection Forecast | Q1 2026 <span class="panel-sub">(95% Confidence Interval)</span></div>
+        <div class="chart-box"><canvas id="chartForecast"></canvas></div>
+      </div>
+    </section>
+
+    <section class="grid-3">
+      <div class="panel">
+        <div class="panel-title">Claims Denial Rate by Insurance Payer</div>
+        <div class="chart-box"><canvas id="chartPayerRates"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Monthly Revenue Collection &amp; Billing Gap</div>
+        <div class="chart-box"><canvas id="chartBillingGap"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Claims Distribution by Insurance Payer</div>
+        <div class="chart-box donut-box">
+          <canvas id="chartPayerDist"></canvas>
+          <div class="donut-center" id="donutClaimsTotal">--</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
