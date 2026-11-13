@@ -19,7 +19,8 @@ client = TestClient(app)
 @pytest.fixture(scope="module", autouse=True)
 def setup_warehouse() -> None:
     run_pipeline()
-    generate_all_ba_artifacts()
+    if not (DOCS_BA_DIR / "rtm_workbook.xlsx").exists():
+        generate_all_ba_artifacts()
 
 
 def test_etl_pipeline_integrity() -> None:
